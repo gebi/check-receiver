@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"code.google.com/p/goconf/conf" // new bsd
 )
 
 func init() {
@@ -15,60 +17,81 @@ func init() {
 
 func Handler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
-		http.Error(w, "Only posts allowed", http.StatusForbidden)
+		http.Error(w, "Only POST allowed", http.StatusForbidden)
 		return
 	}
 	if r.URL.Path != "/" {
 		http.Error(w, "Only / allowed as path", http.StatusForbidden)
 		return
 	}
-	hostname := r.Header.Get(*HTTP_HOST_HEADER)
+	hostname := r.Header.Get(HTTP_HOST_HEADER)
 	if hostname == "" {
 		http.Error(w, "No hostname header given", http.StatusForbidden)
 		return
 	}
 
-	tmpfile, err := ioutil.TempFile(*SPOOL_DIR, *PREFIX)
-	defer os.Remove(tmpfile.Name())
+	tmpfile, err := ioutil.TempFile(SPOOL_DIR, PREFIX)
 	if err != nil {
 		log.Printf("Error writing spool file: ", err)
 		http.Error(w, "Error writing spool file", http.StatusInternalServerError)
 		return
 	}
+	defer os.Remove(tmpfile.Name())
 
+	target_name := filepath.Join(SPOOL_DIR, PREFIX+hostname)
 	body_len, err := io.Copy(tmpfile, r.Body)
-	log.Printf("Read %d bytes for %s\n", body_len, hostname)
+	if DEBUG {
+		log.Printf("Read %d bytes for %q -> %s\n", body_len, hostname, target_name)
+		return
+	}
 	tmpfile.Close()
 
-	target_name := filepath.Join(*SPOOL_DIR, *PREFIX+hostname)
 	os.Rename(tmpfile.Name(), target_name)
 }
 
 var (
-	HTTP_HOST_HEADER *string
-	LISTEN           *string
-	SPOOL_DIR        *string
-	PREFIX           *string
-	PREFIX_TMP       *string
+	HTTP_HOST_HEADER string
+	LISTEN           string
+	SPOOL_DIR        string
+	PREFIX           string
+	PREFIX_TMP       string
+	DEBUG            bool
 )
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	HTTP_HOST_HEADER = flag.String("header", "REMOTE_USER", "Header to get hostname from")
-	LISTEN = flag.String("listen", "localhost:8443", "Socket to listen on")
-	SPOOL_DIR = flag.String("spool", "", "Spool directory for uploaded files (required!)")
-	PREFIX = flag.String("prefix", "nagios-receiver.", "Prefix name for spool files")
-	tmp_prefix := (*PREFIX)[:len(*PREFIX)-1] + "-tmp."
-	PREFIX_TMP = &tmp_prefix
+	config_file := flag.String("conf", "default.conf", "Config file to use")
+	flag.BoolVar(&DEBUG, "debug", false, "Enable debug output")
 	flag.Parse()
 
-	if *SPOOL_DIR == "" {
-		log.Fatal("No --spool <directory> configured")
+	c, err := conf.ReadConfigFile(*config_file)
+	if err != nil {
+		log.Fatal("Error parsing config file: ", err)
+	}
+
+	LISTEN = getString(c, "", "listen")
+	HTTP_HOST_HEADER = getString(c, "", "header")
+	SPOOL_DIR = getString(c, "", "spool_dir")
+	PREFIX = getString(c, "", "file_prefix")
+	PREFIX_TMP = getString(c, "", "tmpfile_prefix")
+
+	if !isDir(SPOOL_DIR) {
+		log.Fatalf("Spool directory %s does not exist or is not a directory", SPOOL_DIR)
 	}
 
 	// routing configuration
 	http.HandleFunc("/", Handler)
 
-	log.Print("Start listening on ", *LISTEN, " spool=", *SPOOL_DIR)
-	log.Fatal(http.ListenAndServe(*LISTEN, nil))
+	log.Print("Start listening on ", LISTEN, " spool=", SPOOL_DIR)
+	log.Fatal(http.ListenAndServe(LISTEN, nil))
+}
+
+func isDir(path string) bool {
+	fileinfo, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+
+	filemode := fileinfo.Mode()
+	return filemode.IsDir()
 }
