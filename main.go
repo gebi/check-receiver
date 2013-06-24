@@ -36,17 +36,22 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error writing spool file", http.StatusInternalServerError)
 		return
 	}
-	defer os.Remove(tmpfile.Name())
+	tmpfile_name := tmpfile.Name()
+	defer os.Remove(tmpfile_name)
 
 	target_name := filepath.Join(SPOOL_DIR, PREFIX+hostname)
 	body_len, err := io.Copy(tmpfile, r.Body)
 	if DEBUG {
 		log.Printf("Read %d bytes for %q -> %s\n", body_len, hostname, target_name)
-		return
 	}
 	tmpfile.Close()
 
-	os.Rename(tmpfile.Name(), target_name)
+	if err := os.Chmod(tmpfile_name, 0660); err != nil {
+		log.Printf("Error changing permission: ", err)
+	}
+	if err := os.Rename(tmpfile_name, target_name); err != nil {
+		log.Printf("Error renaming file: ", err)
+	}
 }
 
 var (
