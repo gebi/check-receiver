@@ -13,7 +13,7 @@ nagios-receiver writes the POST data from a client into a file which is construc
 This makes it essentialy maintenance free as username/password or certificate
 handling is entierly done by the reverse proxy.
 
-**WARNING: nagios-receiver IS NOT INTENDED TO BE USED WITHOUT REVERSE PROXY!**
+**WARNING: nagios-receiver IS NOT INTENDED TO BE USED WITHOUT AUTHENTICATING REVERSE PROXY!**
 
 
 Overview
