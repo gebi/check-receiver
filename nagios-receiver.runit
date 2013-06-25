@@ -1,0 +1,16 @@
+#!/bin/bash
+set -e
+exec 2>&1
+
+NAME="$(basename "$(pwd)")"
+echo "**** Starting: $NAME"
+
+BIN_PATH_="/srv/nagios-receiver"
+CONF_="${BIN_PATH_}/prod.conf"
+
+cd /
+
+#DEBUG_="-debug"
+DEBUG_=""
+
+exec /usr/bin/chpst -u "nagrecv:nagrecv:nagios" ${BIN_PATH_}/nagios-receiver -conf "$CONF_" $DEBUG_
