@@ -39,7 +39,15 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	tmpfile_name := tmpfile.Name()
 	defer os.Remove(tmpfile_name)
 
-	target_name := filepath.Join(SPOOL_DIR, PREFIX+hostname)
+	// sanitize target path
+	target_filename_unsafe := filepath.Clean(PREFIX+hostname)
+	escape_check, target_filename := filepath.Split(target_filename_unsafe)
+	if escape_check != "" {
+		log.Printf("Error: invalid spool filename, escapes spool directory - %q", target_filename_unsafe)
+		http.Error(w, "Error invalid spool filename", http.StatusInternalServerError)
+	}
+	target_name := filepath.Join(SPOOL_DIR, target_filename)
+
 	body_len, err := io.Copy(tmpfile, r.Body)
 	if DEBUG {
 		log.Printf("Read %d bytes for %q -> %s\n", body_len, hostname, target_name)
