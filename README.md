@@ -22,23 +22,25 @@ Overview
 
 What you need:
 
-    * Installed nagios-receiver daemon on the server
-    * Working reverse proxy to nagios-receiver for authentication (client cert or http auth)
-    * Check-mk installation with added nagios-receiver.mk to `/etc/check_mk/conf.d/`
-    * A few hosts tagged with `nagpush` in check-mk
-    * Those hosts pushing the output of `check_mk_agent` to your server
+* Installed nagios-receiver daemon on the server
+* Working reverse proxy to nagios-receiver for authentication (client cert or http auth)
+* Check-mk installation with added nagios-receiver.mk to `/etc/check_mk/conf.d/`
+* A few hosts tagged with `nagpush` in check-mk
+* Those hosts pushing the output of `check_mk_agent` to your server
 
 
 Install
 -------
 
-Installing go on your system:
+Section on how to compile nagios-receiver and put it on the server
+
+Install go on your system:
 
     apt-get install golang-go
     export GOPATH=~/go
     mkdir ~/go
 
-Downloading and compiling the lastest version of nagios-receiver
+Downloading and compile the lastest version of nagios-receiver
 
     go get github.com/gebi/nagios-receiver
     rsync -cvt $GOPATH/bin/nagios-receiver root@SERVER:/srv/nagios-receiver
@@ -47,7 +49,13 @@ Downloading and compiling the lastest version of nagios-receiver
 Apache config
 -------------
 
-a2enmod headers
+Sample config for apache used as a reverse proxy for nagios-receiver
+
+Enable needed modules
+
+    a2enmod headers
+
+Config snippet
 
     ProxyPass /check-receiver/ http://localhost:8443/
     <Location /check-receiver/>
@@ -68,6 +76,8 @@ a2enmod headers
 Client Command
 --------------
 
+Examples on what is needed on the client side to push check-mk output to the server
+
 Add http authentication information to ~/.netrc
 
     machine SERVER login USER password PASS
@@ -82,7 +92,22 @@ Command to submit check information with proxy
     check_mk_agent | curl -s --netrc --data-binar @- https://SERVER/check-receiver/
 
 
-Daemon with runit
+Nagios/Icinga Config
+--------------------
+
+The ramdisk is shared between nagios/icinga and nagios-receiver which is also in the group nagios.
+To be able to write to the ramdisk.
+
+From /etc/rc.local:
+
+    mountpoint -q /var/lib/icinga/ramdisk || mount -t tmpfs tmpfs /var/lib/icinga/ramdisk -o uid=104,gid=108,mode=2771,size=250m
+
+On Debian
+    uid = uid of nagios
+    gid = gid of nagios
+
+
+Daemon With Runit
 -----------------
 
 On server:
@@ -121,14 +146,17 @@ Configure runit and log service
 
 From source:
 
-    rsync -cvt nagios-receiver.runit root@SERVER:/etc/sv/nagios-receiver/run
+    rsync -cvt $GOPATH/src/github.com/gebi/nagios-receiver/nagios-receiver.runit root@SERVER:/etc/sv/nagios-receiver/run
 
 
 Debug with
 ---------
 
-    # start daemon with default.conf
+Some informations on how to debug nagios-receiver if you want to hack on it.
+
+    # start daemon with default.conf and debug output
     ./nagios-receiver -debug
 
     # write data for user "foo"
     /bin/echo -e 'a\nb\nc\nd' |curl --data-binary @- -u foo:bar -H "X-REMOTE-USER: foo" http://localhost:8443
+
