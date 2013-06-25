@@ -1,20 +1,19 @@
 nagios-receiver
 ===============
 
-Daemon to receive nagios/check-mk results pushed through https/http
+Nagios-receiver is a daemon to receive nagios/check-mk results pushed through https/http.
 
-nagios-receiver is written to be placed behind an nginx or apache reverse proxy.
-The reverse proxy can authenticate the clients with either http auth or client
-certificates and should write the username/CN into an http header.
-The header for authentication is configurable, default config file uses `REMOTE_USER`.
+It is designed to be placed behind an nginx or apache reverse proxy.
+The reverse proxy can authenticate the clients with either HTTP auth or client
+certificates and should write the username/CN into a HTTP header.
+The header for authentication is configurable, and defaults to `X-REMOTE-USER`.
 
-nagios-receiver writes the POST data from client into a file which consists of
-`{spool_dir}/{file_prefix}HTTP_HEADER`.
+nagios-receiver writes the POST data from a client into a file which is constructed from
+`{spool_dir}/{file_prefix}HTTP_HEADER`. (eg. /var/lib/icinga/ramdisk/nagios-receiver.myhost)
 This makes it essentialy maintenance free as username/password or certificate
 handling is entierly done by the reverse proxy.
 
-WARNING:
-nagios-receiver IS NOT INTENDED TO BE USED WITHOUT REVERSE PROXY!
+**WARNING: nagios-receiver IS NOT INTENDED TO BE USED WITHOUT REVERSE PROXY!**
 
 
 Overview
@@ -23,7 +22,7 @@ Overview
 What you need:
 
 * Installed nagios-receiver daemon on the server
-* Working reverse proxy to nagios-receiver for authentication (client cert or http auth)
+* Working reverse proxy to nagios-receiver for authentication (client cert or HTTP auth)
 * Check-mk installation with added nagios-receiver.mk to `/etc/check_mk/conf.d/`
 * A few hosts tagged with `nagpush` in check-mk
 * Those hosts pushing the output of `check_mk_agent` to your server
