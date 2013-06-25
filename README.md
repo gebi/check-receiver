@@ -20,11 +20,29 @@ nagios-receiver IS NOT INTENDED TO BE USED WITHOUT REVERSE PROXY!
 Apache config
 -------------
 
-LimitRequestBody = 1048576  # 1MB
+a2enmod headers
+
+    ProxyPass /check-receiver/ http://localhost:8443/
+    <Location /check-receiver/>
+        ProxyPassReverse /
+
+        AuthName "Check Receiver"
+        AuthType Basic
+        AuthUserFile auth/check-receiver.auth
+        Require valid-user
+
+        RequestHeader set X-REMOTE-USER %{REMOTE_USER}s
+
+        # limit POST to 1MB
+        LimitRequestBody 1048576
+    </Location>
 
 
 Debug with
 ---------
 
+    # start daemon with default.conf
     ./nagios-receiver -debug
-    /bin/echo -e 'a\nb\nc\nd' |curl --data-binary @- -u foo:bar -H "REMOTE_USER: foo" http://localhost:8443
+
+    # write data for user "foo"
+    /bin/echo -e 'a\nb\nc\nd' |curl --data-binary @- -u foo:bar -H "X-REMOTE-USER: foo" http://localhost:8443
