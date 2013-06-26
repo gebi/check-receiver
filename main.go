@@ -40,13 +40,13 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	defer os.Remove(tmpfile_name)
 
 	// sanitize target path
-	target_filename_unsafe := filepath.Clean(PREFIX+hostname)
-	escape_check, target_filename := filepath.Split(target_filename_unsafe)
-	if escape_check != "" {
-		log.Printf("Error: invalid spool filename, escapes spool directory - %q", target_filename_unsafe)
+	target_name := filepath.Join(SPOOL_DIR, PREFIX+hostname)
+	spool_dir, _ := filepath.Split(target_name)
+	if filepath.Clean(spool_dir) != SPOOL_DIR {
+		log.Printf("Error: invalid spool filename, escapes spool directory - %q", target_name)
 		http.Error(w, "Error invalid spool filename", http.StatusInternalServerError)
+		return
 	}
-	target_name := filepath.Join(SPOOL_DIR, target_filename)
 
 	body_len, err := io.Copy(tmpfile, r.Body)
 	if DEBUG {
@@ -84,7 +84,7 @@ func main() {
 
 	LISTEN = getString(c, "", "listen")
 	HTTP_HOST_HEADER = getString(c, "", "header")
-	SPOOL_DIR = getString(c, "", "spool_dir")
+	SPOOL_DIR = filepath.Clean(getString(c, "", "spool_dir"))
 	PREFIX = getString(c, "", "file_prefix")
 	PREFIX_TMP = getString(c, "", "tmpfile_prefix")
 
