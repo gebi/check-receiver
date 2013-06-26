@@ -17,4 +17,8 @@ var _ = Suite(&MySuite{})
 func (suite *MySuite) TestPathRestrict(c *C) {
 	c.Check(filepath.Clean("foo"+"/"), Equals, "foo")
 	c.Check(filepath.Clean("foo/"+"/"), Equals, "foo")
+
+	a, _ := filepath.Split("foo/a")
+	c.Check(a, Equals, "foo/")
+	c.Check(filepath.Clean(a), Equals, "foo")
 }
