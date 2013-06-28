@@ -5,7 +5,7 @@ exec 2>&1
 NAME="$(basename "$(pwd)")"
 echo "**** Starting: $NAME"
 
-BIN_PATH_="/srv/nagios-receiver"
+BIN_PATH_="/srv/check-receiver"
 CONF_="${BIN_PATH_}/prod.conf"
 
 cd /
@@ -13,4 +13,4 @@ cd /
 #DEBUG_="-debug"
 DEBUG_=""
 
-exec /usr/bin/chpst -u "nagrecv:nagrecv:nagios" ${BIN_PATH_}/nagios-receiver -conf "$CONF_" $DEBUG_
+exec /usr/bin/chpst -u "nagrecv:nagrecv:nagios" ${BIN_PATH_}/check-receiver -conf "$CONF_" $DEBUG_

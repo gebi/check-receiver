@@ -1,19 +1,19 @@
-nagios-receiver
+check-receiver
 ===============
 
-Nagios-receiver is a daemon to receive nagios/check-mk results pushed through https/http.
+check-receiver is a daemon to receive nagios/check-mk results pushed through https/http.
 
 It is designed to be placed behind an nginx or apache reverse proxy.
 The reverse proxy can authenticate the clients with either HTTP auth or client
 certificates and should write the username/CN into a HTTP header.
 The header for authentication is configurable, and defaults to `X-REMOTE-USER`.
 
-nagios-receiver writes the POST data from a client into a file which is constructed from
-`{spool_dir}/{file_prefix}HTTP_HEADER`. (eg. /var/lib/icinga/ramdisk/nagios-receiver.myhost)
+check-receiver writes the POST data from a client into a file which is constructed from
+`{spool_dir}/{file_prefix}HTTP_HEADER`. (eg. /var/lib/icinga/ramdisk/check-receiver.myhost)
 This makes it essentialy maintenance free as username/password or certificate
 handling is entierly done by the reverse proxy.
 
-**WARNING: nagios-receiver IS NOT INTENDED TO BE USED WITHOUT AUTHENTICATING REVERSE PROXY!**
+**WARNING: check-receiver IS NOT INTENDED TO BE USED WITHOUT AUTHENTICATING REVERSE PROXY!**
 
 
 Overview
@@ -21,9 +21,9 @@ Overview
 
 What you need:
 
-* Installed nagios-receiver daemon on the server
-* Working reverse proxy to nagios-receiver for authentication (client cert or HTTP auth)
-* Check-mk installation with added nagios-receiver.mk to `/etc/check_mk/conf.d/`
+* Installed check-receiver daemon on the server
+* Working reverse proxy to check-receiver for authentication (client cert or HTTP auth)
+* Check-mk installation with added check-receiver.mk to `/etc/check_mk/conf.d/`
 * A few hosts tagged with `nagpush` in check-mk
 * Those hosts pushing the output of `check_mk_agent` to your server
 
@@ -31,7 +31,7 @@ What you need:
 Install
 -------
 
-Section on how to compile nagios-receiver and put it on the server
+Section on how to compile check-receiver and put it on the server
 
 Install go on your system:
 
@@ -39,16 +39,16 @@ Install go on your system:
     export GOPATH=~/go
     mkdir ~/go
 
-Downloading and compile the lastest version of nagios-receiver
+Downloading and compile the lastest version of check-receiver
 
-    go get github.com/gebi/nagios-receiver
-    rsync -cvt $GOPATH/bin/nagios-receiver root@SERVER:/srv/nagios-receiver
+    go get github.com/gebi/check-receiver
+    rsync -cvt $GOPATH/bin/check-receiver root@SERVER:/srv/check-receiver
 
 
 Apache config
 -------------
 
-Sample config for apache used as a reverse proxy for nagios-receiver
+Sample config for apache used as a reverse proxy for check-receiver
 
 Enable needed modules
 
@@ -94,7 +94,7 @@ Command to submit check information with proxy
 Nagios/Icinga Config
 --------------------
 
-The ramdisk is shared between nagios/icinga and nagios-receiver which is also in the group nagios.
+The ramdisk is shared between nagios/icinga and check-receiver which is also in the group nagios.
 To be able to write to the ramdisk.
 
 From /etc/rc.local:
@@ -130,14 +130,14 @@ Configure runit and log service
     chmod 755 /usr/local/sbin/sva
 
     # configure runit service
-    mkdir -p /etc/sv/nagios-receiver
-    cd /etc/sv/nagios-receiver
-    ln -s /var/run/sv.nagios-receiver supervise
+    mkdir -p /etc/sv/check-receiver
+    cd /etc/sv/check-receiver
+    ln -s /var/run/sv.check-receiver supervise
 
     # configure logging service
-    mkdir /etc/sv/nagios-receiver/log
-    cd /etc/sv/nagios-receiver/log
-    ln -s /var/run/sv.nagios-receiver.log supervise
+    mkdir /etc/sv/check-receiver/log
+    cd /etc/sv/check-receiver/log
+    ln -s /var/run/sv.check-receiver.log supervise
     wget -O run https://github.com/gebi/runit-toolkit/raw/master/lib/scripts/common-log
     chmod 755 run
     mkdir conf
@@ -145,16 +145,16 @@ Configure runit and log service
 
 From source:
 
-    rsync -cvt $GOPATH/src/github.com/gebi/nagios-receiver/nagios-receiver.runit root@SERVER:/etc/sv/nagios-receiver/run
+    rsync -cvt $GOPATH/src/github.com/gebi/check-receiver/check-receiver.runit root@SERVER:/etc/sv/check-receiver/run
 
 
 Debug with
 ---------
 
-Some informations on how to debug nagios-receiver if you want to hack on it.
+Some informations on how to debug check-receiver if you want to hack on it.
 
     # start daemon with default.conf and debug output
-    ./nagios-receiver -debug
+    ./check-receiver -debug
 
     # write data for user "foo"
     /bin/echo -e 'a\nb\nc\nd' |curl --data-binary @- -u foo:bar -H "X-REMOTE-USER: foo" http://localhost:8443

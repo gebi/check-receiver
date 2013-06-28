@@ -1,4 +1,4 @@
-PROG= nagios-receiver
+PROG= check-receiver
 
 all: bin
 
