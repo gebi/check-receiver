@@ -143,6 +143,9 @@ Configure runit and log service
     mkdir conf
     echo nagrecvlog >conf/LOGUSER
 
+    # enable check-receiver service in runit
+    ln -s ../sv/check-receiver /etc/service/check-receiver
+
 From source:
 
     rsync -cvt $GOPATH/src/github.com/gebi/check-receiver/check-receiver.runit root@SERVER:/etc/sv/check-receiver/run
