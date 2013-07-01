@@ -1,7 +1,7 @@
 check-receiver
 ===============
 
-check-receiver is a daemon to receive nagios/check-mk results pushed through https/http.
+check-receiver is a daemon to receive nagios/icinga/check-mk results pushed through https/http.
 
 It is designed to be placed behind an nginx or apache reverse proxy.
 The reverse proxy can authenticate the clients with either HTTP auth or client
