@@ -8,6 +8,9 @@ bin:
 strip:
 	strip --strip-all $(PROG)
 
+test:
+	go test -gocheck.v
+
 format:
 	gofmt -s -w *.go
 

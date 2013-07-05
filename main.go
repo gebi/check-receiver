@@ -39,10 +39,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	tmpfile_name := tmpfile.Name()
 	defer os.Remove(tmpfile_name)
 
-	// sanitize target path
-	target_name := filepath.Join(SPOOL_DIR, PREFIX+hostname)
-	spool_dir, _ := filepath.Split(target_name)
-	if filepath.Clean(spool_dir) != SPOOL_DIR {
+	target_name, ok := createSpoolFilePath(SPOOL_DIR, PREFIX+hostname)
+	if !ok {
 		log.Printf("Error: invalid spool filename, escapes spool directory - %q", target_name)
 		http.Error(w, "Error invalid spool filename", http.StatusInternalServerError)
 		return
@@ -107,4 +105,15 @@ func isDir(path string) bool {
 
 	filemode := fileinfo.Mode()
 	return filemode.IsDir()
+}
+
+// Ensure that regardlessly of filename the file is always created inside spool_dir
+func createSpoolFilePath(spool_dir, filename string) (string, bool) {
+	target_name := filepath.Join(spool_dir, filename)
+	spool_dir_check, _ := filepath.Split(target_name)
+	if filepath.Clean(spool_dir_check) != spool_dir {
+		// nevertheless return bogus target_name so the caller can print a nice error
+		return target_name, false
+	}
+	return target_name, true
 }
