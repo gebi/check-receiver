@@ -32,7 +32,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	tmpfile, err := ioutil.TempFile(SPOOL_DIR, PREFIX)
 	if err != nil {
-		log.Printf("Error writing spool file: ", err)
+		log.Println("Error writing spool file: ", err)
 		http.Error(w, "Error writing spool file", http.StatusInternalServerError)
 		return
 	}
@@ -53,10 +53,10 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	tmpfile.Close()
 
 	if err := os.Chmod(tmpfile_name, 0660); err != nil {
-		log.Printf("Error changing permission: ", err)
+		log.Println("Error changing permission: ", err)
 	}
 	if err := os.Rename(tmpfile_name, target_name); err != nil {
-		log.Printf("Error renaming file: ", err)
+		log.Println("Error renaming file: ", err)
 	}
 }
 
