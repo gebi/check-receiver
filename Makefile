@@ -5,6 +5,9 @@ all: bin
 bin:
 	go build
 
+deb: bin
+	debuild -uc -us -i
+
 strip:
 	strip --strip-all $(PROG)
 

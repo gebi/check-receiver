@@ -1,0 +1,10 @@
+[Unit]
+Description=check-receiver is a daemon to receive nagios/icinga/check-mk results
+
+[Service]
+ExecStart=/usr/bin/check-receiver -conf /etc/check-receiver.conf
+User=nagrecv
+Group=nagrecv
+
+[Install]
+WantedBy=multi-user.target

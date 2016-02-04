@@ -1,0 +1,11 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: check-receiver
+Source: https://github.com/gebi/check-receiver
+
+Files: *
+Copyright: 2016 Michael Gebetsroither <michael@mgeb.org>
+License: BSD
+
+Files: debian/*
+Copyright: 2016 Michael Gebetsroither <michael@mgeb.org>
+License: BSD

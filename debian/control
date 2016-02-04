@@ -1,0 +1,27 @@
+Source: check-receiver
+Section: admin
+Priority: optional
+Maintainer: Michael Gebetsroither <michael@mgeb.org>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.5
+Homepage: https://github.com/gebi/check-receiver
+Vcs-Git: https://github.com/gebi/check-receiver.git
+Vcs-Browser: https://github.com/gebi/check-receiver
+
+Package: check-receiver
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: check-receiver is a daemon to receive nagios/icinga/check-mk results.
+ It is designed to be placed behind an nginx or apache reverse proxy. The
+ reverse proxy can authenticate the clients with either HTTP auth or client
+ certificates and should write the username/CN into a HTTP header. The header
+ for authentication is configurable, and defaults to X-REMOTE-USER.
+ . 
+ check-receiver writes the POST data from a client into a file which is
+ constructed from {spool_dir}/{file_prefix}HTTP_HEADER. (eg.
+ /var/lib/icinga/ramdisk/check-receiver.myhost) This makes it essentialy
+ maintenance free as username/password or certificate handling is entierly done
+ by the reverse proxy.
+ .
+ WARNING: check-receiver IS NOT INTENDED TO BE USED WITHOUT AUTHENTICATING
+ REVERSE PROXY!

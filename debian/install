@@ -1,0 +1,3 @@
+check-receiver usr/bin
+debian/check-receiver.service lib/systemd/system/
+debian/check-receiver.conf etc
