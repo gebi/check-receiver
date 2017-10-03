@@ -39,6 +39,8 @@ func (suite *MySuite) TestCreateSpoolFilePath(c *C) {
 		{"/tmp", "../foo", false, "/foo"},
 		{"/tmp", "/../foo", false, "/foo"},
 		{"/tmp", "/.././foo", false, "/foo"},
+		{"../tmp", "../foo/bar", false, "../foo/bar"},
+		{"../tmp", "../foo/bar.html", false, "../foo/bar.html"},
 	}
 
 	for _, sym := range testsym {
